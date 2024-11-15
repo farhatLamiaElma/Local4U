@@ -1,0 +1,70 @@
+/* reg_login.css */
+
+/* Apply a global font family */
+body {
+    font-family: 'Nunito', 'Open Sans', sans-serif;
+    background-color: #f8f9fa; /* Light background color */
+    color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Center and style the form container */
+.container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    margin: 20px;
+    text-align: center;
+}
+
+/* Heading style */
+h2 {
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: #00ff9d; /* Bootstrap primary color */
+}
+
+/* Form field styling */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form .form-control {
+    margin-bottom: 15px;
+}
+
+/* Button styling */
+button {
+    background-color: #007bff;
+    border: none;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Message styling */
+.messages {
+    margin-top: 20px;
+    color: #dc3545; /* Bootstrap danger color for errors */
+}
+
+.messages p {
+    margin: 0;
+    font-weight: 600;
+}
