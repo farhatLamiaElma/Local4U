@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block body_block %}
+    <h1>Update Image for {{ product.name }}</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>New Image:</label>
+        <input type="file" name="image">
+        <button type="submit">Update Image</button>
+    </form>
+{% endblock %}

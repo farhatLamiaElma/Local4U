@@ -1,0 +1,30 @@
+<!--{% extends 'base.html' %}-->
+
+{% block content %}
+    <h1>Update Price and Quantity for {{ product.name }}</h1>
+
+    <!-- Display any error or success messages -->
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <!-- Form to update the price and quantity -->
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Price input -->
+        <label for="price">New Price:</label>
+        <input type="number" name="price" value="{{ product.price }}" step="0.01" min="0" id="price">
+
+        <!-- Quantity input -->
+        <label for="quantity">New Quantity:</label>
+        <input type="number" name="quantity" value="{{ product.stock }}" min="0" id="quantity">
+
+        <button type="submit">Update Product</button>
+    </form>
+
+{% endblock %}
