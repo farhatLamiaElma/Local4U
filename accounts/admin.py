@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import CustomUser, Farmer, Customer, Admin
 
+
 # Customize the Farmer admin to display CustomUser fields
 class FarmerAdmin(admin.ModelAdmin):
     list_display = ('get_first_name', 'get_last_name', 'get_email', 'get_address', 'get_contact_number', 'user_type')
@@ -34,4 +35,5 @@ admin.site.register(CustomUser)
 admin.site.register(Farmer, FarmerAdmin)
 admin.site.register(Customer)
 admin.site.register(Admin)
+
 

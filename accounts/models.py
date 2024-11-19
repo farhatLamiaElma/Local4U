@@ -20,6 +20,7 @@ class Farmer(models.Model):
     address = models.CharField(max_length=255)
     contact_number = models.CharField(max_length=15)
 
+
     def __str__(self):
         return self.user.username
 
@@ -40,4 +41,6 @@ class Admin(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
 
