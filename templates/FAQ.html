@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body_block %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">About Us</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>FAQ</h2>
+            <p>Answer to your general enquires</p>
+        </div>
+        <ul>
+            {% for faq in faqs %}
+                <li>
+                    <strong>{{ faq.question }}</strong><br>
+                    {{ faq.answer }}<br>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h2>Who We Are</h2>
+            <p>We are a passionate team dedicated to improving the way people access fresh produce. Our platform is built to bridge the gap between local farmers and customers, ensuring quality products and fair prices. We believe in sustainable practices, community support, and creating a positive impact on the environment.</p>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h2>Our Values</h2>
+            <ul>
+                <li><strong>Sustainability:</strong> We are committed to promoting eco-friendly farming practices.</li>
+                <li><strong>Community:</strong> We support and empower local farmers and small businesses.</li>
+                <li><strong>Quality:</strong> We ensure that all products are fresh, organic, and high-quality.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

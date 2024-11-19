@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load cart_filters %}
+
+{% block body_block %}
+<div class="container my-5">
+    <h1>Your Shopping Cart</h1>
+
+    {% if cart %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product_id, item in cart.items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>${{ item.price }}</td>
+                <td>
+                    <form method="POST" action="{% url 'cart_update' product_id %}">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" required>
+                        <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                    </form>
+                </td>
+                <td>${{ item.quantity|multiply:item.price }}</td>
+                <td>
+                    <a href="{% url 'cart_remove' product_id %}" class="btn btn-sm btn-danger">Remove</a>
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h3>Total: ${{ total }}</h3>
+    <a href="#" class="btn btn-primary">Proceed to Checkout</a>
+    {% else %}
+    <p>Your cart is empty.</p>
+    {% endif %}
+</div>
+{% endblock %}
