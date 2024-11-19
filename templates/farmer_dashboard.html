@@ -1,7 +1,60 @@
 {% extends 'base.html' %}
-{% block body_block %}
-<head>
-    <h1>Farmer Account</h1>
-</head>
 
+{% block body_block %}
+<h1>Welcome, {{ user.username }}</h1>
+<h2>Your Products</h2>
+
+<!-- Displaying products list -->
+{% if products %}
+    <ul>
+    {% for product in products %}
+        <li>
+            <strong>{{ product.name }}</strong> - ${{ product.price }} - {{ product.stock }}
+            <!-- Links styled as buttons -->
+            <a href="{% url 'update_product_price' product.id %}"
+               style="background-color: #4CAF50; color: white; padding: 2px 5px; text-decoration: none; border-radius: 2px; margin-right: 5px; display: inline-block;">
+                Update Price
+            </a>
+            <a href="{% url 'update_product_quantity' product.id %}"
+               style="background-color: #ff9800; color: white; padding: 2px 5px; text-decoration: none; border-radius: 2px; margin-right: 5px; display: inline-block;">
+                Update Quantity
+            </a>
+            <a href="{% url 'update_product_image' product.id %}"
+               style="background-color: #2196F3; color: white; padding: 2px 5px; text-decoration: none; border-radius: 2px; margin-top: 5px; display: inline-block;">
+                Update Image
+            </a>
+            <a href="{% url 'view_sales' product.id %}" class="btn btn-primary btn-sm">View Sales</a>
+
+        </li>
+    {% endfor %}
+</ul>
+{% else %}
+    <p>You have no products. Please add one below.</p>
+{% endif %}
+
+<!-- Add Product Button -->
+<button id="addProductButton">Add Product</button>
+
+<!-- Add Product Form (Initially hidden) -->
+<div id="addProductForm" style="display:none;">
+    <h3>Add a New Product</h3>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ product_form.as_p }}  <!-- Renders product form fields -->
+        <button type="submit">Add Product</button>
+    </form>
+</div>
+
+<!-- JavaScript to toggle the form visibility -->
+<script>
+    document.getElementById('addProductButton').addEventListener('click', function() {
+        var form = document.getElementById('addProductForm');
+        // Toggle visibility of the add product form
+        if (form.style.display === 'none' || form.style.display === '') {
+            form.style.display = 'block';
+        } else {
+            form.style.display = 'none';
+        }
+    });
+</script>
 {% endblock %}

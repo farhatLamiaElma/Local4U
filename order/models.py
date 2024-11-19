@@ -55,3 +55,5 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment {self.id} - {self.order} - {self.status}"
+
+
