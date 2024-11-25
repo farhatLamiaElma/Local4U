@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body_block %}
+<h2>Choose Your Payment Method</h2>
+<p>Total Amount: ${{ order.total_price }}</p>
+
+<form method="POST" action="{% url 'process_payment' order.id %}">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="payment_method">Select Payment Method:</label>
+        <select id="payment_method" name="payment_method" class="form-control">
+            <option value="Credit Card">Credit Card</option>
+            <option value="Debit Card">Debit Card</option>
+            <option value="Cash on Delivery">Cash on Delivery</option>
+            <option value="PayPal">PayPal</option>
+        </select>
+    </div>
+
+    <!-- Credit/Debit Card Details -->
+    <div id="card_details" style="display: none;" class="mt-3">
+        <h4>Enter Your Card Details</h4>
+        <div class="form-group">
+            <label for="card_number">Card Number:</label>
+            <input type="text" id="card_number" name="card_number" class="form-control" placeholder="1234 5678 9012 3456">
+        </div>
+        <div class="form-group">
+            <label for="expiry_date">Expiry Date:</label>
+            <input type="text" id="expiry_date" name="expiry_date" class="form-control" placeholder="MM/YY">
+        </div>
+        <div class="form-group">
+            <label for="cvv">CVV:</label>
+            <input type="text" id="cvv" name="cvv" class="form-control" placeholder="123">
+        </div>
+    </div>
+
+    <!-- PayPal Button (Redirect to PayPal) -->
+    <div id="paypal_button" style="display: none;" class="mt-3">
+        <p>Click the button below to proceed with PayPal:</p>
+        <button type="submit" class="btn btn-primary">Pay with PayPal</button>
+    </div>
+
+    <!-- Cash on Delivery Note -->
+    <div id="cod_note" style="display: none;" class="mt-3">
+        <p>You have selected Cash on Delivery. Please prepare the payment in cash when your order is delivered.</p>
+    </div>
+
+    <button type="submit" class="btn btn-success mt-3">Proceed with Payment</button>
+</form>
+
+<script>
+    // JavaScript to show/hide payment details based on selected method
+    document.getElementById('payment_method').addEventListener('change', function() {
+        var method = this.value;
+        document.getElementById('card_details').style.display = (method === 'Credit Card' || method === 'Debit Card') ? 'block' : 'none';
+        document.getElementById('paypal_button').style.display = (method === 'PayPal') ? 'block' : 'none';
+        document.getElementById('cod_note').style.display = (method === 'Cash on Delivery') ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

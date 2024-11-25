@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block body_block %}
+    <h2>Create a Discount Code</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ discount_form.as_p }}
+        <button type="submit" class="btn btn-success">Create Discount Code</button>
+    </form>
+
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}
+

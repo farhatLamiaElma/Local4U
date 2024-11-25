@@ -28,6 +28,7 @@
                                 <div class="d-flex flex-column text-center">
                                     <h3 class="fs-6 fw-normal">{{ product.name }}</h3>
                                     <span class="text-muted">Farmer: {{ product.farmer.user.first_name }} {{ product.farmer.user.last_name }}</span>
+                                    <span class="text-muted">Location: {{ product.farmer.location }}</span> <!-- Display Farmer Location -->
                                     <div class="d-flex justify-content-center align-items-center gap-2">
                                         <span class="text-dark fw-semibold">${{ product.price }}</span>
                                     </div>
@@ -63,4 +64,3 @@
 </section>
 
 {% endblock %}
-

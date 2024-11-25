@@ -22,19 +22,17 @@
                         <div class="product-item">
                             <figure>
                                 <a href="#" title="{{ product.title }}">
-                                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="tab-image img-fluid">
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="tab-image img-fluid">
                                 </a>
                             </figure>
                             <div class="d-flex flex-column text-center">
-                                <h3 class="fs-6 fw-normal">{{ product.title }}</h3>
+                                <h3 class="fs-6 fw-normal">{{ product.name }}</h3>
                                 <div class="d-flex justify-content-center align-items-center gap-2">
                                     <span class="text-dark fw-semibold">${{ product.price }}</span>
                                 </div>
                                 <div class="button-area p-3 pt-0">
                                     <div class="row g-1 mt-2">
-                                        <div class="col-3">
-                                            <input type="number" name="quantity" class="form-control border-dark-subtle input-number quantity" value="1">
-                                        </div>
+
                                         <div class="col-7">
                                             <form action="{% url 'cart_add' product.id %}" method="POST">
                                                  {% csrf_token %}

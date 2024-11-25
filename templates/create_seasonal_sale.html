@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block body_block %}
+    <h2>Create a Seasonal Sale</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ sale_form.as_p }}
+        <button type="submit" class="btn btn-success">Create Seasonal Sale</button>
+    </form>
+
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

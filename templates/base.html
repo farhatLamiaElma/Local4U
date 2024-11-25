@@ -112,7 +112,7 @@
         {% endfor %}
 
         <li class="list-group-item d-flex justify-content-between">
-          <span>Total (USD)</span>
+          <span>Total (CAD)</span>
           <strong>${{ total }}</strong>
         </li>
       </ul>
@@ -311,9 +311,7 @@
 
                       <li><a href="home.html" class="dropdown-item">Shop </a></li>
                       <li><a href="home.html" class="dropdown-item">Cart </a></li>
-                      <li><a href="home.html" class="dropdown-item">Checkout </a></li>
                       <li><a href="home.html" class="dropdown-item">Contact </a></li>
-                      <li><a href="home.html" class="dropdown-item">Thank You </a></li>
                       <li><a href="home.html" class="dropdown-item">My Account </a></li>
                     </ul>
                   </li>
@@ -323,9 +321,26 @@
               <div class="col-sm-8 col-lg-2 d-flex gap-5 align-items-center justify-content-center justify-content-sm-end">
                 <ul class="d-flex justify-content-end list-unstyled m-0">
                   <li>
-                    <a href="/accounts/login" class="p-2 mx-1">
-                      <svg width="24" height="24"><use xlink:href="#user"></use></svg>
-                    </a>
+                    {% if user.is_authenticated %}
+                      {% if user.user_type == 'farmer' %}
+                        <a href="{% url 'farmer_dashboard' %}" class="p-2 mx-1">
+                          <svg width="24" height="24"><use xlink:href="#user"></use></svg>
+                        </a>
+                      {% elif user.user_type == 'customer' %}
+                        <a href="{% url 'customer_dashboard' %}" class="p-2 mx-1">
+                          <svg width="24" height="24"><use xlink:href="#user"></use></svg>
+                        </a>
+                      {% elif user.user_type == 'admin' %}
+                        <a href="{% url 'admin_dashboard' %}" class="p-2 mx-1">
+                          <svg width="24" height="24"><use xlink:href="#user"></use></svg>
+                        </a>
+                      {% endif %}
+                    {% else %}
+                      <a href="/accounts/login" class="p-2 mx-1">
+                        <svg width="24" height="24"><use xlink:href="#user"></use></svg>
+                      </a>
+                    {% endif %}
+
                   </li>
                   <li>
                     <a href="#" class="p-2 mx-1">
@@ -388,12 +403,12 @@
 
               <div class="col-md-2 col-sm-6">
                 <div class="footer-menu">
-                  <h5 class="widget-title">Organic</h5>
+                  <h5 class="widget-title">Local4U</h5>
                   <ul class="menu-list list-unstyled">
                     <li class="menu-item">
                       <a href="#" class="nav-link">About us</a>
                     </li>
-                    <li class="menu-item">
+                    <!--<li class="menu-item">
                       <a href="#" class="nav-link">Conditions </a>
                     </li>
                     <li class="menu-item">
@@ -407,7 +422,7 @@
                     </li>
                     <li class="menu-item">
                       <a href="#" class="nav-link">Ultras Press</a>
-                    </li>
+                    </li>-->
                   </ul>
                 </div>
               </div>

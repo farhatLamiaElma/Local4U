@@ -24,9 +24,9 @@ urlpatterns = [
     path('', include('home.urls')),
     path('accounts/', include('accounts.urls')),
     path('product/', include('product.urls')),
-    #path('order/', include('order.urls')),
     path('MyChatBot/', include('MyChatBot.urls')),
     path('order/', include('order.urls')),
+    path('paypal/', include('paypal.standard.ipn.urls')),
 
 ]
 

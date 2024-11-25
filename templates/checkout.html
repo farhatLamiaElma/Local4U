@@ -1,13 +1,20 @@
-<form method="POST" action="{% url 'checkout' %}">
+{% extends 'base.html' %}
+{% block body_block %}
+<h2>Checkout</h2>
+<p>Total Amount: ${{ total_amount }}</p>
+<form method="POST" action="{% url 'place_order' %}">
     {% csrf_token %}
-
-    <!-- Other checkout fields -->
-
-    <!-- Coupon Code Section -->
-    <div>
-        <label for="coupon_code">Have a coupon? Enter code here:</label>
-        {{ coupon_form.as_p }}
+    <div class="mb-3">
+        <label for="delivery_address" class="form-label">Delivery Address:</label>
+        <textarea id="delivery_address" name="delivery_address" class="form-control" required>
+            {{ user.customer.user.address }}
+        </textarea>
     </div>
-
-    <button type="submit">Complete Purchase</button>
 </form>
+
+<!-- PayPal Button -->
+<form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post">
+    {{ paypal.render }} <!-- This renders the PayPal button -->
+</form>
+{% endblock %}
+

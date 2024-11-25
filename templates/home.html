@@ -10,7 +10,9 @@
             <p class="fs-4">Go Green Be Organic!</p>
             <div class="d-flex gap-3">
               <a href="#" class="btn btn-primary text-uppercase fs-6 rounded-pill px-4 py-3 mt-3">Start Shopping</a>
-              <a href="/accounts/register" class="btn btn-dark text-uppercase fs-6 rounded-pill px-4 py-3 mt-3">Join Now</a>
+              {% if not user.is_authenticated %}
+                <a href="/accounts/register" class="btn btn-dark text-uppercase fs-6 rounded-pill px-4 py-3 mt-3">Join Now</a>
+              {% endif %}
             </div>
             <div class="row my-5">
               <div class="col">
@@ -155,11 +157,15 @@
             <div class="category-carousel swiper">
               <div class="swiper-wrapper">
                 {% for farmer in farmers %}
-                 <a href="{% url 'products_by_farmer' farmer.user.id %}" class="nav-link swiper-slide text-center">
+                 <a href="{% url 'products_by_farmer' farmer.id %}" class="nav-link swiper-slide text-center">
                    <!-- Display the farmer image -->
-                  {% if farmer.image %}
-                  <img src="{{ farmer.image.url }}" class="rounded-circle img-fluid" alt="{{ farmer.user.first_name }}" style="width: 100px; height: 100px;">
+                  {% if farmer.user.profile_picture %}
+                      <img src="{{ farmer.user.profile_picture.url }}" class="rounded-circle img-fluid" alt="{{ farmer.user.first_name }}" style="width: 100px; height: 100px;">
+                  {% else %}
+                      <!-- Default placeholder image if no image is available -->
+                      <img src="{% static 'profile_pictures/farmer1.png' %}" class="rounded-circle img-fluid" alt="Default Profile Picture" style="width: 100px; height: 100px;">
                   {% endif %}
+
                   <h4 class="fs-6 mt-3 fw-normal category-title">
                       {{ farmer.user.first_name }} {{ farmer.user.last_name }}
                   </h4>
@@ -1641,31 +1647,6 @@
 
           </div>
         </div>
-      </div>
-    </section>
-
-    <!--People are also looking for-->
-    <section class="py-4">
-      <div class="container-lg">
-        <h2 class="my-4">People are also looking for</h2>
-        <a href="#" class="btn btn-warning me-2 mb-2">Blue diamon almonds</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Angie’s Boomchickapop Corn</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Salty kettle Corn</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Chobani Greek Yogurt</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Sweet Vanilla Yogurt</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Foster Farms Takeout Crispy wings</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Warrior Blend Organic</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Chao Cheese Creamy</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Chicken meatballs</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Blue diamon almonds</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Angie’s Boomchickapop Corn</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Salty kettle Corn</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Chobani Greek Yogurt</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Sweet Vanilla Yogurt</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Foster Farms Takeout Crispy wings</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Warrior Blend Organic</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Chao Cheese Creamy</a>
-        <a href="#" class="btn btn-warning me-2 mb-2">Chicken meatballs</a>
       </div>
     </section>
 

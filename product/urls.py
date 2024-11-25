@@ -15,4 +15,8 @@ urlpatterns = [
     path('update_product_image/<int:product_id>/', views.update_product_image, name='update_product_image'),
     path('update_product_quantity/<int:product_id>/', views.update_product_quantity, name='update_product_quantity'),
     path('view_sales/<int:product_id>/', views.view_sales, name='view_sales'),
+    path('discount/create/', views.create_discount_code, name='create_discount_code'),
+    path('sale/create/', views.create_seasonal_sale, name='create_seasonal_sale'),
+    path('discounts/', views.list_discounts, name='list_discounts'),
+    path('seasonal-sales/', views.list_seasonal_sales, name='list_seasonal_sales'),
 ]

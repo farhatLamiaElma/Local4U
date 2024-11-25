@@ -6,11 +6,11 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('register/login/', views.login_view, name='login'),
     path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('profile/update/', views.update_profile, name='update_profile'),
+    path('profile/change-password/', views.change_password, name='change_password'),
+    path('farmer/dashboard/', farmer_dashboard, name='farmer_dashboard'),
     path('customer/dashboard/', views.customer_dashboard, name='customer_dashboard'),
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    path('register/', register, name='register'),
-    path('login/', login_view, name='login'),
-    path('farmer/dashboard/', farmer_dashboard, name='farmer_dashboard'),
-    path('update_quantity/<int:product_id>/', views.update_product_quantity, name='update_product_quantity'),
 ]
 
