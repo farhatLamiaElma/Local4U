@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'home', 'accounts', 'product', 'order'
+    'home', 'accounts', 'product', 'order', 'paypal.standard.ipn'
 ]
 
 MIDDLEWARE = [
@@ -134,3 +134,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
+PAYPAL_RECEIVER_EMAIL = 'sb-4c6gg34048904@business.example.com'
+PAYPAL_TEST = True  # Set to False in production

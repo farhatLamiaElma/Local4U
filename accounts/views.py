@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
-from .forms import UserRegistrationForm, LoginForm
+from .forms import UserRegistrationForm, LoginForm, ProfileUpdateForm
 from .models import CustomUser, Farmer, Customer, Admin
 from product.models import Category, Product
+from order.models import Order
 from product.forms import ProductForm
 def register(request):
     if request.method == 'POST':
@@ -62,6 +65,9 @@ def login_view(request):
 
     return render(request, 'login.html', {'form': form})
 
+def logout_view(request):
+    logout(request)
+    return redirect('home')
 
 def farmer_dashboard(request):
     if not hasattr(request.user, 'farmer'):
@@ -92,29 +98,41 @@ def farmer_dashboard(request):
         'product_form': product_form,
     })
 
-
+@login_required
 def customer_dashboard(request):
-    # Logic for the customer dashboard
-    return render(request, 'customer_dashboard.html')
+    orders = Order.objects.filter(customer=request.user.customer).order_by('-order_date')
+    return render(request, 'customer_dashboard.html', {'orders': orders})
 
 def admin_dashboard(request):
     # Logic for the admin dashboard
     return render(request, 'admin_dashboard.html')
 
+@login_required
+def update_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('update_profile')  # Redirect to the profile page
+    else:
+        form = ProfileUpdateForm(instance=user)
 
-from django.shortcuts import render, get_object_or_404
-from product.models import Product  # Ensure the correct model is imported
+    return render(request, 'update_profile.html', {'form': form})
 
 
-def update_product_quantity(request, product_id):
-    # Example logic for updating product quantity
-    product = get_object_or_404(Product, id=product_id)
-
-    if request.method == "POST":
-        new_quantity = request.POST.get("quantity")
-        if new_quantity and new_quantity.isdigit():
-            product.quantity = int(new_quantity)
-            product.save()
-            return render(request, 'success.html', {'message': 'Quantity updated successfully'})
-
-    return render(request, 'update_quantity.html', {'product': product})
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important to keep the user logged in
+            messages.success(request, 'Your password was updated successfully!')
+            return redirect('change_password')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'change_password.html', {'form': form})

@@ -31,14 +31,14 @@
                 <td>${{ item.quantity|multiply:item.price }}</td>
                 <td>
                     <a href="{% url 'cart_remove' product_id %}" class="btn btn-sm btn-danger">Remove</a>
-
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     <h3>Total: ${{ total }}</h3>
-    <a href="#" class="btn btn-primary">Proceed to Checkout</a>
+    <!-- Redirect to Checkout -->
+    <a href="{% url 'checkout' %}" class="btn btn-primary">Proceed to Checkout</a>
     {% else %}
     <p>Your cart is empty.</p>
     {% endif %}

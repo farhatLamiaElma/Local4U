@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block body_block %}
+<h2>Order Success</h2>
+<p>Your order with ID {{ order.id }} has been placed successfully!</p>
+<a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a>
+{% endblock %}

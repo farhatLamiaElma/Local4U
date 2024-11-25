@@ -32,3 +32,9 @@ class UserRegistrationForm(forms.ModelForm):
 class LoginForm(forms.Form):
     username_or_email = forms.CharField(label='Username or Email')
     password = forms.CharField(widget=forms.PasswordInput)
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email', 'address', 'contact_number', 'profile_picture']
