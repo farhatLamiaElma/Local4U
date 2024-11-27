@@ -1,4 +1,4 @@
-
+from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from product.models import Product
@@ -16,7 +16,7 @@ import json
 def cart_summary(request):
     cart = request.session.get('cart', {})
     total = sum(
-        float(item['price']) * item['quantity'] for item in cart.values()
+        float(item['price']) * int(item['quantity']) for item in cart.values()
     )
     return render(request, 'cart_summary.html', {'cart': cart, 'total': total})
 
@@ -28,6 +28,9 @@ def cart_add(request, product_id):
         # Retrieve product
         product = get_object_or_404(Product, id=product_id)
 
+        # Determine the price to use (discounted or original)
+        price = product.discounted_price if product.discounted_price else product.price
+
         # Initialize cart in session if not already done
         cart = request.session.get('cart', {})
 
@@ -38,7 +41,8 @@ def cart_add(request, product_id):
         else:
             cart[product_id] = {
                 'name': product.name,
-                'price': str(product.price),
+                'price': str(price),
+                'original_price': str(product.price),
                 'quantity': quantity,
             }
 
@@ -46,7 +50,11 @@ def cart_add(request, product_id):
         request.session['cart'] = cart
 
         messages.success(request, f"{product.name} added to cart!")
-        return redirect('cart_summary')
+        referer_url = request.META.get('HTTP_REFERER', None)
+        if referer_url:
+            return HttpResponseRedirect(referer_url)
+        else:
+            return redirect('products_by_category')
     return redirect('products_by_category')
 
 
@@ -150,7 +158,7 @@ def checkout(request):
         'amount': f"{total_amount:.2f}",
         'item_name': "Cart Purchase",
         'invoice': str(uuid.uuid4()),
-        'currency_code': 'USD',
+        'currency_code': 'CAD',
         'notify_url': f"http://{host}/paypal/ipn/",
         'return_url': f"http://{host}/order/payment-successful/",
         'cancel_url': f"http://{host}/order/payment-failed/",

@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from .forms import UserRegistrationForm, LoginForm, ProfileUpdateForm
-from .models import CustomUser, Farmer, Customer, Admin
+from .models import CustomUser, Farmer, Customer, Admin, Notification
 from product.models import Category, Product
 from order.models import Order
 from product.forms import ProductForm
@@ -115,6 +115,13 @@ def update_profile(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Your profile has been updated successfully!')
+            # Determine the redirect URL based on user role
+            if hasattr(user, 'farmer'):
+                return redirect('farmer_dashboard')
+            elif hasattr(user, 'customer'):
+                return redirect('customer_dashboard')
+            else:
+                return redirect('admin_dashboard')
             return redirect('update_profile')  # Redirect to the profile page
     else:
         form = ProfileUpdateForm(instance=user)
@@ -130,9 +137,41 @@ def change_password(request):
             user = form.save()
             update_session_auth_hash(request, user)  # Important to keep the user logged in
             messages.success(request, 'Your password was updated successfully!')
+            # Determine the redirect URL based on user role
+            if hasattr(user, 'farmer'):
+                return redirect('farmer_dashboard')
+            elif hasattr(user, 'customer'):
+                return redirect('customer_dashboard')
+            else:
+                return redirect('admin_dashboard')
             return redirect('change_password')
         else:
             messages.error(request, 'Please correct the error below.')
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'change_password.html', {'form': form})
+
+
+
+@login_required
+def notifications(request):
+    # Fetch unread notifications for the logged-in user
+    notifications = request.user.notifications.all()
+
+    # Determine the dashboard URL
+    if hasattr(request.user, 'farmer'):
+        dashboard_url = 'farmer_dashboard'
+    elif hasattr(request.user, 'customer'):
+        dashboard_url = 'customer_dashboard'
+    else:
+        dashboard_url = 'admin_dashboard'  # Default for admins or other roles
+
+    # Mark notifications as read
+    notifications.update(is_read=True)
+
+    return render(request, 'notifications.html', {
+        'notifications': notifications,
+        'dashboard_url': dashboard_url
+    })
+
+

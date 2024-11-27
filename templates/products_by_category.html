@@ -21,15 +21,23 @@
                     <div class="col">
                         <div class="product-item">
                             <figure>
-                                <a href="#" title="{{ product.title }}">
+                                <a href="{% url 'product_detail' product.id %}" title="{{ product.title }}">
                                     <img src="{{ product.image.url }}" alt="{{ product.name }}" class="tab-image img-fluid">
                                 </a>
                             </figure>
                             <div class="d-flex flex-column text-center">
                                 <h3 class="fs-6 fw-normal">{{ product.name }}</h3>
                                 <div class="d-flex justify-content-center align-items-center gap-2">
-                                    <span class="text-dark fw-semibold">${{ product.price }}</span>
+                                    {% if product.discounted_price %}
+                                        <!-- Show both original and discounted prices -->
+                                        <span class="text-muted text-decoration-line-through">${{ product.price }}</span>
+                                        <span class="text-success fw-bold">${{ product.discounted_price }}</span>
+                                    {% else %}
+                                        <!-- Show only the original price -->
+                                        <span class="text-dark fw-semibold">${{ product.price }}</span>
+                                    {% endif %}
                                 </div>
+
                                 <div class="button-area p-3 pt-0">
                                     <div class="row g-1 mt-2">
 

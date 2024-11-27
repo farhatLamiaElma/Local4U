@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block body_block %}
+<h1>Notifications</h1>
+<ul class="list-group">
+    {% for notification in notifications %}
+    <li class="list-group-item">
+        {{ notification.message }}
+        <span class="text-muted"> - {{ notification.created_at|date:"Y-m-d H:i" }}</span>
+    </li>
+    {% empty %}
+    <li class="list-group-item">No new notifications.</li>
+    {% endfor %}
+</ul>
+<a href="{% url dashboard_url %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+{% endblock %}

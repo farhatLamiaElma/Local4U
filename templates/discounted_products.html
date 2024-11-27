@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_block %}
+<title>Discounted Products</title>
+<section class="pb-5">
+    <div class="container-lg">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="section-header d-flex flex-wrap justify-content-between my-4">
+                    <h2 class="section-title">Discounted Products</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="product-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5">
+                    {% for product in products %}
+                    <div class="col">
+                        <div class="product-item">
+                            <figure>
+                                <a href="{% url 'product_detail' product.id %}" title="{{ product.name }}">
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="tab-image img-fluid">
+                                </a>
+                            </figure>
+                            <div class="d-flex flex-column text-center">
+                                <h3 class="fs-6 fw-normal">{{ product.name }}</h3>
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    {% if product.discounted_price %}
+                                    <del class="text-muted">${{ product.price }}</del>
+                                    <span class="text-dark fw-semibold">${{ product.discounted_price }}</span>
+                                    {% else %}
+                                    <span class="text-dark fw-semibold">${{ product.price }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="button-area p-3 pt-0">
+                                    <div class="row g-1 mt-2">
+                                        <div class="col-3">
+                                            <input type="number" name="quantity" class="form-control border-dark-subtle input-number quantity" value="1">
+                                        </div>
+                                        <div class="col-7">
+                                            <form action="{% url 'cart_add' product.id %}" method="POST">
+                                                {% csrf_token %}
+
+                                                <button type="submit" class="btn btn-primary">Add to Cart</button>
+                                            </form>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <!-- / product-grid -->
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if products.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ products.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for page_num in products.paginator.page_range %}
+                <li class="page-item {% if page_num == products.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if products.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ products.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</section>
+{% endblock %}

@@ -20,7 +20,12 @@
             {% for product_id, item in cart.items %}
             <tr>
                 <td>{{ item.name }}</td>
-                <td>${{ item.price }}</td>
+                <td>
+                    {% if item.original_price != item.price %}
+                        <span class="text-muted text-decoration-line-through">${{ item.original_price }}</span>
+                    {% endif %}
+                    ${{ item.price }}
+                </td>
                 <td>
                     <form method="POST" action="{% url 'cart_update' product_id %}">
                         {% csrf_token %}

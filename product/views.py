@@ -1,11 +1,22 @@
 from django.shortcuts import render, get_object_or_404,redirect
-from accounts.models import Farmer
-from .models import Product, Category, DiscountCode, SeasonalSale
-from .forms import ProductForm, DiscountCodeForm, SeasonalSaleForm
+from accounts.models import Farmer, Notification
+from .models import Product, Category, Review, ReviewReply, SeasonalSale
+from .forms import ProductForm, ReviewForm, ReviewReplyForm, SeasonalSaleForm
 from django.contrib import messages
 from order.models import Order
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Q
+
+
+def all_products(request):
+    products_list = Product.objects.all()
+    paginator = Paginator(products_list, 20)  # Show 10 products per page
+    page_number = request.GET.get('page')  # Get the page number from the request
+    products = paginator.get_page(page_number)  # Fetch the products for the current page
+
+    return render(request, 'all_products.html', {'products': products})
+
 # View to search for products by name
 def search_products(request):
     query = request.GET.get('q')  # Retrieve the search query from the URL parameters
@@ -37,6 +48,83 @@ def products_by_farmer(request, farmer_id):
         'products': products,
     }
     return render(request, 'products_by_farmer.html', {'products': products, 'farmer': farmer})
+
+def all_discounted_products(request):
+    discounted_products = Product.objects.filter(discounted_price__isnull=False).order_by('-updated_at')
+    paginator = Paginator(discounted_products, 20)  # 20 products per page
+    page_number = request.GET.get('page')
+    products_page = paginator.get_page(page_number)
+    return render(request, 'discounted_products.html', {'products': products_page})
+
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    reviews = product.reviews.all()  # Fetch all reviews for the product
+
+    if request.method == 'POST':
+        if request.user.is_authenticated and hasattr(request.user, 'customer'):
+            form = ReviewForm(request.POST)
+            if form.is_valid():
+                review = form.save(commit=False)
+                review.product = product
+                review.customer = request.user
+                review.save()
+
+                # Notify the farmer about the new review
+                message = f"{request.user.username} left a review on your product: {product.name}"
+                Notification.objects.create(
+                    recipient=product.farmer.user,
+                    message=message
+                )
+
+                messages.success(request, "Your review has been submitted!")
+                return redirect('product_detail', product_id=product.id)
+        else:
+            messages.error(request, "Only customers can leave reviews.")
+            return redirect('product_detail', product_id=product.id)
+    else:
+        form = ReviewForm()
+
+    return render(request, 'product_detail.html', {
+        'product': product,
+        'reviews': reviews,
+        'form': form,
+    })
+
+@login_required
+def product_detail_farmer(request, product_id):
+    product = get_object_or_404(Product, id=product_id, farmer=request.user.farmer)
+    reviews = product.reviews.all()
+
+    if request.method == 'POST':
+        if 'reply' in request.POST:  # Farmer replies to a review
+            review_id = request.POST.get('review_id')
+            review = get_object_or_404(Review, id=review_id)
+            form = ReviewReplyForm(request.POST)
+            if form.is_valid():
+                reply = form.save(commit=False)
+                reply.review = review
+                reply.farmer = request.user.farmer
+                reply.save()
+
+                # Notify the customer about the reply
+                message = f"{request.user.username} replied to your review on the product: {product.name}"
+                Notification.objects.create(
+                    recipient=review.customer,
+                    message=message
+                )
+
+                messages.success(request, "Your reply has been added.")
+                return redirect('product_detail_farmer', product_id=product_id)
+        else:
+            messages.error(request, "Invalid action.")
+    else:
+        form = ReviewReplyForm()
+
+    return render(request, 'product_detail_farmer.html', {
+        'product': product,
+        'reviews': reviews,
+        'form': form,
+    })
 
 def add_product(request):
     if request.method == 'POST':
@@ -125,47 +213,20 @@ def view_sales(request, product_id):
 
 
 @login_required
-def create_discount_code(request):
-    farmer = request.user.farmer  # Get the logged-in farmer
-
-    if request.method == 'POST':
-        discount_form = DiscountCodeForm(request.POST)
-        if discount_form.is_valid():
-            discount = discount_form.save(commit=False)
-            discount.farmer = farmer  # Associate the discount with the farmer
-            discount.save()
-            messages.success(request, 'Discount code created successfully!')
-            return redirect('farmer_dashboard')  # Redirect back to the same page or another page
-    else:
-        discount_form = DiscountCodeForm()
-
-    return render(request, 'create_discount_code.html', {'discount_form': discount_form})
-
-
-@login_required
 def create_seasonal_sale(request):
-    farmer = request.user.farmer  # Get the logged-in farmer
-
     if request.method == 'POST':
-        sale_form = SeasonalSaleForm(request.POST)
-        if sale_form.is_valid():
-            sale = sale_form.save(commit=False)
-            sale.farmer = farmer  # Associate the sale with the farmer
+        form = SeasonalSaleForm(request.POST, farmer=request.user.farmer)
+        if form.is_valid():
+            sale = form.save(commit=False)
+            sale.farmer = request.user.farmer
             sale.save()
-            sale.products.set(sale_form.cleaned_data['products'])  # Save many-to-many relationship
-            messages.success(request, 'Seasonal sale created successfully!')
-            return redirect('farmer_dashboard')  # Redirect back to the same page or another page
+            form.save_m2m()  # Save the many-to-many relationship
+            sale.apply_discount()
+            messages.success(request, 'Seasonal Sale created and discounts applied!')
+            return redirect('list_seasonal_sales')
     else:
-        sale_form = SeasonalSaleForm()
-
-    return render(request, 'create_seasonal_sale.html', {'sale_form': sale_form})
-
-
-@login_required
-def list_discounts(request):
-    farmer = request.user.farmer  # Get the logged-in farmer
-    discounts = DiscountCode.objects.filter(farmer=farmer)  # Get all discount codes for this farmer
-    return render(request, 'list_discounts.html', {'discounts': discounts})
+        form = SeasonalSaleForm(farmer=request.user.farmer)
+    return render(request, 'create_seasonal_sale.html', {'sale_form': form})
 
 @login_required
 def list_seasonal_sales(request):
@@ -173,3 +234,26 @@ def list_seasonal_sales(request):
     sales = SeasonalSale.objects.filter(farmer=farmer)  # Get all seasonal sales for this farmer
     return render(request, 'list_seasonal_sales.html', {'sales': sales})
 
+@login_required
+def remove_seasonal_sale_discount(request, sale_id):
+    sale = get_object_or_404(SeasonalSale, id=sale_id, farmer=request.user.farmer)
+    sale.remove_discount()
+    sale.delete()
+    messages.success(request, 'Seasonal Sale and discounts removed!')
+    return redirect('list_seasonal_sales')
+
+def list_farmers(request):
+    farmers = Farmer.objects.all()
+    paginator = Paginator(farmers, 10)  # 10 farmers per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'list_farmers.html', {'page_obj': page_obj})
+
+def list_categories(request):
+    categories = Category.objects.all()
+    paginator = Paginator(categories, 10)  # 10 categories per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'list_categories.html', {'page_obj': page_obj})

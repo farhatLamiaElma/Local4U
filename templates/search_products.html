@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block body_block %}
 
+{% block body_block %}
 <title>Search Results for "{{ query }}"</title>
 <section class="pb-5">
     <div class="container-lg">
@@ -14,53 +14,59 @@
         </div>
 
         {% if products %}
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="product-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5">
-                        {% for product in products %}
-                        <div class="col">
-                            <div class="product-item">
-                                <figure>
-                                    <a href="#" title="{{ product.name }}">
-                                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="tab-image img-fluid">
-                                    </a>
-                                </figure>
-                                <div class="d-flex flex-column text-center">
-                                    <h3 class="fs-6 fw-normal">{{ product.name }}</h3>
-                                    <span class="text-muted">Farmer: {{ product.farmer.user.first_name }} {{ product.farmer.user.last_name }}</span>
-                                    <span class="text-muted">Location: {{ product.farmer.location }}</span> <!-- Display Farmer Location -->
-                                    <div class="d-flex justify-content-center align-items-center gap-2">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="product-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5">
+                    {% for product in products %}
+                    <div class="col">
+                        <div class="product-item">
+                            <figure>
+                                <a href="{% url 'product_detail' product.id %}" title="{{ product.name }}">
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="tab-image img-fluid">
+                                </a>
+                            </figure>
+                            <div class="d-flex flex-column text-center">
+                                <h3 class="fs-6 fw-normal">{{ product.name }}</h3>
+                                <span class="text-muted">Farmer: {{ product.farmer.user.full_name }}</span>
+                                <span class="text-muted">Location: {{ product.farmer.user.address }}</span>
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    {% if product.discounted_price %}
+                                        <!-- Show both original and discounted prices -->
+                                        <span class="text-muted text-decoration-line-through">${{ product.price }}</span>
+                                        <span class="text-success fw-bold">${{ product.discounted_price }}</span>
+                                    {% else %}
+                                        <!-- Show only the original price -->
                                         <span class="text-dark fw-semibold">${{ product.price }}</span>
-                                    </div>
-                                    <div class="button-area p-3 pt-0">
-                                        <div class="row g-1 mt-2">
-                                            <div class="col-3">
-                                                <input type="number" name="quantity" class="form-control border-dark-subtle input-number quantity" value="1">
-                                            </div>
-                                            <div class="col-7">
-                                                <a href="#" class="btn btn-primary rounded-1 p-2 fs-7 btn-cart">
-                                                    <svg width="18" height="18"><use xlink:href="#cart"></use></svg> Add to Cart
-                                                </a>
-                                            </div>
-                                            <div class="col-2">
-                                                <a href="#" class="btn btn-outline-dark rounded-1 p-2 fs-6">
-                                                    <svg width="18" height="18"><use xlink:href="#heart"></use></svg>
-                                                </a>
-                                            </div>
+                                    {% endif %}
+                                </div>
+                                <div class="button-area p-3 pt-0">
+                                    <div class="row g-1 mt-2">
+                                        <div class="col-7">
+                                            <form action="{% url 'cart_add' product.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                                <input type="number" name="quantity" value="1" min="1" class="form-control">
+                                                <button type="submit" class="btn btn-primary btn-sm mt-2">Add to Cart</button>
+                                            </form>
+                                        </div>
+                                        <div class="col-2">
+                                            <a href="#" class="btn btn-outline-dark rounded-1 p-2 fs-6">
+                                                <svg width="18" height="18"><use xlink:href="#heart"></use></svg>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
-                    <!-- / product-grid -->
+                    {% endfor %}
                 </div>
+                <!-- / product-grid -->
             </div>
+        </div>
         {% else %}
-            <p class="text-center">No products found.</p>
+        <p class="text-center">No products found.</p>
         {% endif %}
     </div>
 </section>
-
 {% endblock %}

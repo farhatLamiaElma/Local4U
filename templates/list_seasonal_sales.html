@@ -33,6 +33,13 @@
                             {{ product.name }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     </td>
+                    <td>
+                        {% for product in sale.products.all %}
+                            {{ product.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                        <a href="{% url 'remove_seasonal_sale_discount' sale.id %}" class="btn btn-danger btn-sm">Remove Discount</a>
+                    </td>
+
                 </tr>
             {% endfor %}
         </tbody>
