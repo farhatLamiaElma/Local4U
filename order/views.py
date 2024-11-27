@@ -4,15 +4,18 @@ from django.shortcuts import render, redirect, get_object_or_404
 from product.models import Product
 from accounts.models import Customer
 from django.http import JsonResponse
-from django.utils import timezone
 from .models import Order, OrderItem, Payment
 from django.conf import settings
 from paypal.standard.forms import PayPalPaymentsForm
+from django.contrib.auth.decorators import login_required
 import uuid
 from django.urls import reverse
 import json
-#CART = {}
+from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
+from paypal.standard.models import ST_PP_COMPLETED
 
+# Handles displaying the cart summary, including total price
 def cart_summary(request):
     cart = request.session.get('cart', {})
     total = sum(
@@ -20,25 +23,26 @@ def cart_summary(request):
     )
     return render(request, 'cart_summary.html', {'cart': cart, 'total': total})
 
+# Adds a product to the cart or updates its quantity
 def cart_add(request, product_id):
     if request.method == 'POST':
-        product_id = str(request.POST.get('product_id'))  # Ensure consistent key type
-        quantity = int(request.POST.get('quantity', 1))  # Default to 1 if not provided
+        product_id = str(request.POST.get('product_id'))  # Ensure product ID consistency as a string
+        quantity = int(request.POST.get('quantity', 1))  # Default quantity to 1 if not specified
 
-        # Retrieve product
+        # Fetch product details or return 404 if not found
         product = get_object_or_404(Product, id=product_id)
 
-        # Determine the price to use (discounted or original)
+        # Use the discounted price if available, otherwise use the regular price
         price = product.discounted_price if product.discounted_price else product.price
 
-        # Initialize cart in session if not already done
+        # Initialize the cart in the session if it doesn't exist
         cart = request.session.get('cart', {})
 
-        # Add or update product in the cart
+        # Update the product's quantity if it already exists in the cart
         if product_id in cart:
-            # Replace the quantity with the new one
             cart[product_id]['quantity'] = quantity
         else:
+            # Add new product to the cart
             cart[product_id] = {
                 'name': product.name,
                 'price': str(price),
@@ -46,9 +50,10 @@ def cart_add(request, product_id):
                 'quantity': quantity,
             }
 
-        # Save updated cart to session
+        # Save the updated cart back to the session
         request.session['cart'] = cart
 
+        # Inform the user that the product has been added
         messages.success(request, f"{product.name} added to cart!")
         referer_url = request.META.get('HTTP_REFERER', None)
         if referer_url:
@@ -57,43 +62,36 @@ def cart_add(request, product_id):
             return redirect('products_by_category')
     return redirect('products_by_category')
 
-
+# Removes a product from the cart
 def cart_remove(request, product_id):
     product_id = str(product_id)
-    # Retrieve cart from session
     cart = request.session.get('cart', {})
 
     if product_id in cart:
         del cart[product_id]
-        request.session['cart'] = cart  # Save updated cart to session
-        # Show success message
+        request.session['cart'] = cart  # Save updated cart
         messages.success(request, "Item removed from cart.")
     else:
         messages.error(request, "Item not found in cart.")
 
     return redirect("cart_summary")
 
+# Updates the quantity of a product in the cart
 def cart_update(request, product_id):
-    # Retrieve cart from session
     product_id = str(product_id)
     cart = request.session.get('cart', {})
 
-    quantity = int(request.POST.get("quantity", 1))
+    quantity = int(request.POST.get("quantity", 1))  # Default quantity to 1
 
     if product_id in cart:
         cart[product_id]["quantity"] = quantity
         messages.success(request, "Cart updated.")
-
-        # Save the updated cart back to the session
-        request.session['cart'] = cart
+        request.session['cart'] = cart  # Save updated cart
     else:
         messages.error(request, "Item not found in cart.")
     return redirect("cart_summary")
 
-
-
-from django.utils import timezone
-
+# Places an order based on the current cart contents
 def place_order(request):
     if request.method == 'POST':
         cart = request.session.get('cart', {})
@@ -102,24 +100,24 @@ def place_order(request):
             messages.error(request, "Your cart is empty!")
             return redirect("cart_summary")
 
-        # Create a new Order
-        customer = request.user.customer  # Assuming the user is authenticated and linked to a Customer
+        # Create a new order for the logged-in customer
+        customer = request.user.customer
         order = Order.objects.create(
             customer=customer,
             delivery_address=request.POST.get('delivery_address', customer.user.address),
             order_date=timezone.now(),
         )
 
-        # Iterate through the cart and create OrderItems
+        # Create an OrderItem for each cart item
         for product_id, item in cart.items():
             product = get_object_or_404(Product, id=product_id)
             quantity = item['quantity']
             OrderItem.objects.create(
                 order=order,
                 product=product,
-                farmer=product.farmer,  # Set the farmer based on the product
+                farmer=product.farmer,
                 quantity=quantity,
-                price=product.price  # Price at the time of placing the order
+                price=product.price,
             )
 
         # Clear the cart after placing the order
@@ -129,18 +127,12 @@ def place_order(request):
 
     return redirect("cart_summary")
 
-
+# Displays the details of a specific order
 def order_summary(request, order_id):
     order = get_object_or_404(Order, id=order_id, customer=request.user.customer)
     return render(request, 'order_summary.html', {'order': order})
 
-
-
-
-from paypal.standard.forms import PayPalPaymentsForm
-from django.conf import settings
-import uuid
-
+# Prepares the cart for checkout with PayPal
 def checkout(request):
     cart = request.session.get('cart', {})
     if not cart:
@@ -152,7 +144,7 @@ def checkout(request):
 
     host = request.get_host()
 
-    # Prepare PayPal payment details without the custom field
+    # Set up PayPal payment details
     paypal_checkout = {
         'business': settings.PAYPAL_RECEIVER_EMAIL,
         'amount': f"{total_amount:.2f}",
@@ -172,27 +164,11 @@ def checkout(request):
     }
     return render(request, 'checkout.html', context)
 
-
-
-
-
-
-
-from django.core.exceptions import ObjectDoesNotExist
-
-
-from paypal.standard.models import ST_PP_COMPLETED
-
-
-
+# Handles successful payments
 def payment_successful(request):
     payer_id = request.GET.get('PayerID')
-
-    # Debugging logs
-    print(f"PayerID: {payer_id}")
-
-    # Retrieve cart from session
     cart = request.session.get('cart', {})
+
     if not cart:
         messages.error(request, "No cart data found.")
         return redirect('cart_summary')
@@ -203,13 +179,11 @@ def payment_successful(request):
             float(item['price']) * item['quantity'] for item in cart.values()
         )
 
-        # Create the Order
         order = Order.objects.create(
             customer=customer,
             delivery_address=request.GET.get('address', customer.user.address),
         )
 
-        # Create OrderItems
         for product_id, item in cart.items():
             product = Product.objects.get(id=product_id)
             OrderItem.objects.create(
@@ -220,7 +194,6 @@ def payment_successful(request):
                 price=product.price,
             )
 
-        # Create Payment
         Payment.objects.create(
             order=order,
             amount=total_amount,
@@ -228,30 +201,25 @@ def payment_successful(request):
             status="Completed",
         )
 
-        # Clear the cart
         request.session['cart'] = {}
         return render(request, 'payment_successful.html', {'order': order})
 
     except Exception as e:
-        print(f"Error in payment_successful: {e}")
         messages.error(request, "An error occurred while processing your payment.")
         return redirect('payment-failed')
 
-
-
-
+# Handles payment failures
 def payment_failed(request):
     return render(request, 'payment_failed.html')
 
-from django.contrib.auth.decorators import login_required
-
+# Displays orders related to the logged-in farmer
 @login_required
 def farmer_orders(request):
-    farmer = request.user.farmer  # Assuming the user is logged in as a farmer
+    farmer = request.user.farmer
     order_items = OrderItem.objects.filter(farmer=farmer).select_related('order', 'product')
     return render(request, 'farmer_orders.html', {'order_items': order_items})
 
-
+# Updates the status of an order item by the farmer
 @login_required
 def update_order_item_status(request, item_id):
     order_item = get_object_or_404(OrderItem, id=item_id, farmer=request.user.farmer)
