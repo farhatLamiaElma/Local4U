@@ -26,7 +26,7 @@
             {% for item in order.items.all %}
                 <tr>
                     <td>{{ item.product.name }}</td>
-                    <td>{{ item.farmer.user.first_name }} {{ item.farmer.user.last_name }}</td>
+                    <td>{{ item.farmer.user.full_name }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>${{ item.total_price }}</td>
                     <td>{{ item.status }}</td>

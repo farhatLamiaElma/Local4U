@@ -65,6 +65,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'product.context_processors.category_menu',
                 'order.context_processors.cart_data',
             ],
         },
@@ -136,3 +137,10 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 PAYPAL_RECEIVER_EMAIL = 'sb-4c6gg34048904@business.example.com'
 PAYPAL_TEST = True  # Set to False in production
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'farhatlamia29@gmail.com'
+EMAIL_HOST_PASSWORD = 'farhatlamia29'

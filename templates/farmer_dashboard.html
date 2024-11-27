@@ -1,79 +1,95 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block body_block %}
 <h1>Welcome, {{ user.username }}</h1>
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center">
-            <!-- Display the user's profile picture -->
-            {% if user.profile_picture %}
-                <img src="{{ user.profile_picture.url }}" alt="{{ user.first_name }}'s Profile Picture" class="rounded-circle me-3" width="50" height="50">
-            {% else %}
-                <!-- Default placeholder image if no profile picture is uploaded -->
-                <img src="{% static 'profile_pictures/farmer1.png' %}" alt="Default Profile Picture" class="rounded-circle me-3" width="50" height="50">
-            {% endif %}
-            <div>
-                <a href="{% url 'update_profile' %}" class="btn btn-primary me-2">Update Profile</a>
-                <a href="{% url 'change_password' %}" class="btn btn-secondary me-2">Change Password</a>
-                <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
-            </div>
-
+<div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+        <!-- Display the user's profile picture -->
+        {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" alt="{{ user.full_name }}'s Profile Picture" class="rounded-circle me-3" width="50" height="50">
+        {% else %}
+            <!-- Default placeholder image if no profile picture is uploaded -->
+            <img src="{% static 'profile_pictures/farmer1.png' %}" alt="Default Profile Picture" class="rounded-circle me-3" width="50" height="50">
+        {% endif %}
+        <div>
+            <a href="{% url 'update_profile' %}" class="btn btn-primary me-2">Update Profile</a>
+            <a href="{% url 'change_password' %}" class="btn btn-secondary me-2">Change Password</a>
+            <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
         </div>
     </div>
+</div>
+
 <h2>Your Products</h2>
+<section class="pb-5">
+    <div class="container-lg">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="product-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5">
+                    {% if products %}
+                        {% for product in products %}
+                        <div class="col">
+                            <div class="product-item">
+                                <figure>
+                                    <a href="{% url 'product_detail_farmer' product.id %}" title="{{ product.name }}">
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="tab-image img-fluid">
+                                    </a>
+                                </figure>
 
-<!-- Displaying products list -->
-{% if products %}
-    <ul>
-    {% for product in products %}
-        <li>
-            <strong>{{ product.name }}</strong> - ${{ product.price }} - {{ product.stock }}
-            <!-- Links styled as buttons -->
-            <a href="{% url 'update_product_price' product.id %}"
-               style="background-color: #4CAF50; color: white; padding: 2px 5px; text-decoration: none; border-radius: 2px; margin-right: 5px; display: inline-block;">
-                Update Price
-            </a>
-            <a href="{% url 'update_product_quantity' product.id %}"
-               style="background-color: #ff9800; color: white; padding: 2px 5px; text-decoration: none; border-radius: 2px; margin-right: 5px; display: inline-block;">
-                Update Quantity
-            </a>
-            <a href="{% url 'update_product_image' product.id %}"
-               style="background-color: #2196F3; color: white; padding: 2px 5px; text-decoration: none; border-radius: 2px; margin-top: 5px; display: inline-block;">
-                Update Image
-            </a>
-            <a href="{% url 'farmer_orders' %}" class="btn btn-primary btn-sm">View Sales</a>
+                                <div class="d-flex flex-column text-center">
+                                    <h3 class="fs-6 fw-normal">{{ product.name }}</h3>
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        {% if product.discounted_price %}
+                                        <!-- Show both original and discounted prices -->
+                                        <span class="text-muted text-decoration-line-through">${{ product.price }}</span>
+                                        <span class="text-success fw-bold">${{ product.discounted_price }}</span>
+                                    {% else %}
+                                        <!-- Show only the original price -->
+                                        <span class="text-dark fw-semibold">${{ product.price }}</span>
+                                    {% endif %}
+                                    </div>
+                                    <p class="text-muted">Stock: {{ product.stock }}</p>
+                                    <div class="button-area p-3 pt-0">
+                                        <a href="{% url 'update_product_price' product.id %}" class="btn btn-success btn-sm mb-2">Update Price</a>
+                                        <a href="{% url 'update_product_quantity' product.id %}" class="btn btn-warning btn-sm mb-2">Update Quantity</a>
+                                        <a href="{% url 'update_product_image' product.id %}" class="btn btn-info btn-sm mb-2">Update Image</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>You have no products. Please add one below.</p>
+                    {% endif %}
+                </div>
+                <!-- / product-grid -->
+            </div>
+        </div>
+    </div>
+</section>
 
-        </li>
-    {% endfor %}
-</ul>
-{% else %}
-    <p>You have no products. Please add one below.</p>
-{% endif %}
-
-<!-- Add Product Button -->
-<button id="addProductButton">Add Product</button>
-<div class="mt-4">
-    <a href="{% url 'create_discount_code' %}" class="btn btn-success me-2">Create Discount Code</a>
-    <a href="{% url 'create_seasonal_sale' %}" class="btn btn-info">Create Seasonal Sale</a>
-</div>
-<div>
-    <a href="{% url 'list_discounts' %}" class="btn btn-outline-success me-2">View Discount Codes</a>
-    <a href="{% url 'list_seasonal_sales' %}" class="btn btn-outline-info">View Seasonal Sales</a>
-</div>
-<!-- Add Product Form (Initially hidden) -->
+<!-- Add Product Section -->
+<button id="addProductButton" class="btn btn-primary my-3">Add Product</button>
 <div id="addProductForm" style="display:none;">
     <h3>Add a New Product</h3>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ product_form.as_p }}  <!-- Renders product form fields -->
-        <button type="submit">Add Product</button>
+        {{ product_form.as_p }}
+        <button type="submit" class="btn btn-primary">Add Product</button>
     </form>
+</div>
+<a href="{% url 'farmer_orders' %}" class="btn btn-secondary">View Sales</a>
+
+<!-- Discount and Sale Options -->
+<div class="mt-4">
+    <a href="{% url 'create_seasonal_sale' %}" class="btn btn-info">Create Seasonal Sale</a>
+    <a href="{% url 'list_seasonal_sales' %}" class="btn btn-outline-info">View Seasonal Sales</a>
 </div>
 
 <!-- JavaScript to toggle the form visibility -->
 <script>
     document.getElementById('addProductButton').addEventListener('click', function() {
         var form = document.getElementById('addProductForm');
-        // Toggle visibility of the add product form
         if (form.style.display === 'none' || form.style.display === '') {
             form.style.display = 'block';
         } else {
@@ -82,3 +98,4 @@
     });
 </script>
 {% endblock %}
+

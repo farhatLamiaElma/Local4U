@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block body_block %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid">
+        </div>
+        <div class="col-md-6">
+            <h1>{{ product.name }}</h1>
+            <p><strong>Price:</strong> ${{ product.price }}</p>
+            <p><strong>Stock:</strong> {{ product.stock }}</p>
+            <p><strong>Description:</strong> {{ product.description }}</p>
+        </div>
+    </div>
+
+    <!-- Customer Reviews -->
+    <div class="row mt-5">
+        <div class="col-md-8">
+            <h3>Customer Reviews</h3>
+            <ul class="list-group">
+                {% for review in reviews %}
+                <li class="list-group-item">
+                    <p><strong>{{ review.customer.username }}</strong> ({{ review.created_at|date:"Y-m-d H:i" }})</p>
+                    <p>{{ review.review_text }}</p>
+                    {% if review.reply %}
+                        <div class="border-start ps-3 mt-3">
+                            <p><strong>Reply:</strong> {{ review.reply.reply_text }}</p>
+                            <p class="text-muted">By: {{ review.reply.farmer.user.username }} on {{ review.reply.created_at|date:"Y-m-d H:i" }}</p>
+                        </div>
+                    {% else %}
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="review_id" value="{{ review.id }}">
+                            {{ form.as_p }}
+                            <button type="submit" name="reply" class="btn btn-primary btn-sm mt-2">Reply</button>
+                        </form>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="list-group-item">No reviews for this product yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <a href="{% url 'farmer_dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}

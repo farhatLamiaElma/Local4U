@@ -1,12 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.conf import settings
 
 class CustomUser(AbstractUser):
     USER_TYPES = (
         ('farmer', 'Farmer'),
         ('customer', 'Customer'),
-        ('admin', 'Admin'),
     )
+    full_name = models.CharField(max_length=100, blank=True)
     address = models.CharField(max_length=255)
     contact_number = models.CharField(max_length=15)
     user_type = models.CharField(max_length=10, choices=USER_TYPES)
@@ -35,4 +36,11 @@ class Admin(models.Model):
         return self.user.username
 
 
+class Notification(models.Model):
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"Notification for {self.recipient.username} - {self.message[:20]}"

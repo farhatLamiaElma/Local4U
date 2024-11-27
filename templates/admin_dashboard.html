@@ -6,7 +6,7 @@
         <div class="d-flex align-items-center">
             <!-- Display the user's profile picture -->
             {% if user.profile_picture %}
-                <img src="{{ user.profile_picture.url }}" alt="{{ user.first_name }}'s Profile Picture" class="rounded-circle me-3" width="50" height="50">
+                <img src="{{ user.profile_picture.url }}" alt="{{ user.full_name }}'s Profile Picture" class="rounded-circle me-3" width="50" height="50">
             {% else %}
                 <!-- Default placeholder image if no profile picture is uploaded -->
                 <img src="{% static '/profile_pictures' %}" alt="Default Profile Picture" class="rounded-circle me-3" width="50" height="50">

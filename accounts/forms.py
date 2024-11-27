@@ -4,12 +4,13 @@ from django.contrib.auth.password_validation import validate_password
 from .models import CustomUser
 
 class UserRegistrationForm(forms.ModelForm):
+    full_name = forms.CharField(max_length=100, required=True)
     password = forms.CharField(widget=forms.PasswordInput, validators=[validate_password])
     password_confirm = forms.CharField(widget=forms.PasswordInput)
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'last_name', 'email', 'user_type', 'address', 'contact_number', 'password']
+        fields = ['username', 'full_name', 'email', 'user_type', 'address', 'contact_number', 'password']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -37,4 +38,4 @@ class LoginForm(forms.Form):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'address', 'contact_number', 'profile_picture']
+        fields = ['full_name', 'email', 'address', 'contact_number', 'profile_picture']
