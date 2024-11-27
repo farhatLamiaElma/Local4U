@@ -1,10 +1,5 @@
-
-
 from django.db import models
-
 from accounts.models import Farmer
-
-
 # Create your models here.
 # FAQ model
 class FAQs(models.Model):
